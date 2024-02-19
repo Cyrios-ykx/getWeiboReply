@@ -1,5 +1,9 @@
 <script setup lang="ts"></script>
 
-<template>123</template>
+<template>
+  <div>
+    <a-button>Add2</a-button>
+  </div>
+</template>
 
 <style scoped></style>
