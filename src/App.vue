@@ -1,9 +1,15 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import Form from './views/SearchForm.vue'
+</script>
 
 <template>
-  <div>
-    <a-button>Add2</a-button>
+  <div class="layout">
+    <Form></Form>
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.layout {
+  width: 800px;
+}
+</style>
