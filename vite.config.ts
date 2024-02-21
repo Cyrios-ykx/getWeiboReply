@@ -25,7 +25,15 @@ export default defineConfig({
         /**
          * 插件的核心 JS，一直活跃在后台，来监听所有请求
          * */
-        background: resolve(__dirname, 'src/background.ts')
+        background: resolve(__dirname, 'src/background.ts'),
+        /**
+         * 与页面同级，并在某个时机执行，可以拿到页面的 document
+         * */
+        content: resolve(__dirname, 'src/content.ts'),
+        /**
+         * 通过content.js嵌入main.js
+         * */
+        main: resolve(__dirname, 'src/main.ts')
       },
       output: {
         assetFileNames: '[name].[ext]',
