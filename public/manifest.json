@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "GetWeiboReply",
+  "name": "get_weibo_reply",
   "description": "Making An Plugin which can get the reply that you want to search at weibo with keywords",
   "version": "0.0.1",
   "action": {
