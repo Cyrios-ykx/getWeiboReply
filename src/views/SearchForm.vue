@@ -73,7 +73,6 @@ img {
   height: 34px;
 }
 .reply-list {
-  height: 400px;
   overflow: scroll;
   display: grid;
   grid-auto-rows: auto; /* 设置每行的高度由内容决定 */

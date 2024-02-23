@@ -35,6 +35,7 @@ export default defineConfig({
          * */
         main: resolve(__dirname, 'src/main.ts')
       },
+      // https://rollupjs.org/configuration-options/#output-assetfilenames
       output: {
         assetFileNames: '[name].[ext]',
         entryFileNames: '[name].js',

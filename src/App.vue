@@ -15,6 +15,7 @@ onMounted(() => {
 
 <style scoped>
 .layout {
+  padding-top: 60px;
   width: 800px;
 }
 </style>

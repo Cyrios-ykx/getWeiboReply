@@ -9,5 +9,19 @@
   "background": {
     "scripts": ["background.js"]
   },
-  "permissions": ["activeTab"]
+  "permissions": ["activeTab"],
+  "//": "https://developer.chrome.com/docs/extensions/develop/concepts/content-scripts?hl=zh-cn",
+  "content_scripts": [
+    {
+      "matches": ["https://weibo.com/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "//": "https://developer.chrome.com/docs/extensions/reference/manifest/web-accessible-resources?hl=zh-cn",
+  "web_accessible_resources": [
+    {
+      "resources": ["main.js", "main.css"],
+      "matches": ["https://weibo.com/*"]
+    }
+  ]
 }

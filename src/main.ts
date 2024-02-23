@@ -13,6 +13,6 @@ components.forEach((component) => {
   app.use(component)
 })
 
-app.mount('#app')
+app.mount('#get-weibo-reply')
 
 app.config.globalProperties.$message = message
