@@ -12,13 +12,14 @@ const getWeiboMainBody = async (para: IGetMainBodyInfo) => {
 }
 
 const getWeiboReplyInfo = async (para: IGetReplyPara) => {
-  const url = `https://weibo.com/ajax/statuses/buildComments?is_reload=${para.is_reload}&id=${para.id}&is_show_bulletin=${para.is_show_bulletin}&is_mix=${para.is_mix}&count=${para.count}&uid=${para.uid}&fetch_level=${para.fetch_level}&locale=${para.locale}`
+  const url = `https://weibo.com/ajax/statuses/buildComments?is_asc=${para.is_asc}is_reload=${para.is_reload}&id=${para.id}&is_show_bulletin=${para.is_show_bulletin}&is_mix=${para.is_mix}&max_id=${para.max_id}&count=${para.count}&uid=${para.uid}&fetch_level=${para.fetch_level}&locale=${para.locale}`
+
   return axios.get(url) as unknown as IGetWeiboReplyInfo
 }
 
-const getWeiboReply = async () => {
+const getWeiboReply = async (id: string) => {
   const get_weibo_main_body_para: IGetMainBodyInfo = {
-    id: 'MprmMfpqm',
+    id: id,
     locale: 'zh-CN'
   }
 
@@ -39,4 +40,4 @@ const getWeiboReply = async () => {
   return reply_info
 }
 
-export { getWeiboMainBody, getWeiboReply }
+export { getWeiboMainBody, getWeiboReplyInfo, getWeiboReply }

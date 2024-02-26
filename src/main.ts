@@ -3,12 +3,12 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 
-import { Input, Button, message, Spin } from 'ant-design-vue'
+import { Input, Button, message, Spin, Progress } from 'ant-design-vue'
 import 'ant-design-vue/dist/reset.css'
 
 const app = createApp(App)
 
-const components = [Input, Button, Spin]
+const components = [Input, Button, Spin, Progress]
 components.forEach((component) => {
   app.use(component)
 })

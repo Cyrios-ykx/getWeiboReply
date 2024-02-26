@@ -180,8 +180,8 @@ interface IGetWeiboReplyInfo {
 }
 // 获取微博评论参数
 interface IGetReplyPara {
-  flow?: number // 默认0
-  max_id?: number //返回IGetWeiboReplyInfo的max_id
+  is_asc?: number // 默认0
+  max_id?: number //IGetWeiboReplyInfo 的max_id
   is_reload: number
   id: number
   is_show_bulletin: number
