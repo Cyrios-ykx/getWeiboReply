@@ -15,6 +15,7 @@ interface IIConListItem {
 }
 
 interface IGetWeiboMainBodyData {
+  message?: string
   annotations: Array<any>
   attitudes_count: number
   attitudes_status: number

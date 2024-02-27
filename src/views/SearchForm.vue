@@ -10,42 +10,57 @@ import { message } from 'ant-design-vue'
 import { SleepMS } from '../libs/utils'
 const [messageApi, contextHolder] = message.useMessage()
 
-const search_value = ref('')
 const reply_list = ref<IReplyInfoDataItem[]>([])
 
-const weibo_id = ref('')
 const reply_list_spinning = ref(false)
-
-const count = ref(20)
 
 const get_count = ref(0)
 const get_total = ref(1)
+
 const getReply = async () => {
   try {
+    await formRef.value.validate()
+  } catch (error) {
+    messageApi.warning('请完善表单，' + error)
+  }
+
+  try {
+    messageApi.info('搜索开始')
     reply_list_spinning.value = true
     const get_weibo_main_body_para: IGetMainBodyInfo = {
-      id: weibo_id.value,
+      id: form.value.weibo_id,
       locale: 'zh-CN'
     }
     const main_body = await getWeiboMainBody(get_weibo_main_body_para)
+    // if (main_body.ok !== 1) {
+    //   messageApi.error(main_body.message)
+    //   return
+    // }
 
-    const reply = await getWeiboReply(weibo_id.value)
+    const reply = await getWeiboReply(form.value.weibo_id)
     get_count.value = reply.data.length
     get_total.value = reply.total_number
 
-    const first_fetch_reply: IReplyInfoDataItem[] = []
+    let fetch_reply: IReplyInfoDataItem[] = []
+    const regex = new RegExp(form.value.search_value)
     for (const reply_item of reply.data) {
-      const regex = new RegExp(search_value.value)
       if (regex.test(reply_item.text)) {
-        first_fetch_reply.push(reply_item)
+        fetch_reply.push(reply_item)
       }
     }
 
-    reply_list.value = first_fetch_reply
+    reply_list.value = fetch_reply
     let new_max_id = reply.max_id
 
     let flag = reply.data.length
     while (flag > 0) {
+      if (stopFlag.value) {
+        reply_list_spinning.value = false
+        stopFlag.value = false
+        messageApi.warning('搜索已停止')
+        break
+      }
+
       await SleepMS(200)
       const para = {
         is_asc: 0,
@@ -54,18 +69,17 @@ const getReply = async () => {
         id: main_body.id,
         is_show_bulletin: main_body.is_show_bulletin,
         is_mix: 0,
-        count: count.value,
+        count: form.value.count,
         uid: main_body.user.id,
         fetch_level: 0,
         locale: get_weibo_main_body_para.locale
       }
       const next_reply = await getWeiboReplyInfo(para)
 
-      const fetch_reply: IReplyInfoDataItem[] = []
-      for (const reply of next_reply.data) {
-        const res = new RegExp(search_value.value)
-        if (res.test(reply.text)) {
-          fetch_reply.push(reply)
+      fetch_reply = []
+      for (const reply_item of next_reply.data) {
+        if (regex.test(reply_item.text)) {
+          fetch_reply.push(reply_item)
         }
       }
       const temp_reply = JSON.parse(JSON.stringify(reply_list.value))
@@ -86,9 +100,27 @@ const formatDateByCreatedAt = (created_at: string) => {
   // 暂时只支持格式化成中国地区的时间
   return dayjs(new Date(created_at).getTime()).format('YY-M-DD HH:mm')
 }
+
+const stopFlag = ref(false)
+const stopGetReply = () => {
+  stopFlag.value = true
+}
+
+const form = ref({
+  count: 20,
+  weibo_id: '',
+  search_value: ''
+})
+const formRef = ref()
+const rules = {
+  count: [{ required: true, message: '请输入单次获取数量', trigger: 'blur' }],
+  weibo_id: [{ required: true, message: '请输入微博正文id号', trigger: 'blur' }],
+  search_value: [{ required: true, message: '请输入想要搜索的内容', trigger: 'blur' }]
+}
 </script>
 
 <template>
+  <!-- 这个不会提示 -->
   <context-holder />
   <div>
     <span class="top-item">更新日期： {{ new Date() }}</span>
@@ -96,44 +128,79 @@ const formatDateByCreatedAt = (created_at: string) => {
     <span class="top-item">Develop by Cyrios.</span>
   </div>
   <div>
-    单次获取数量: <a-input v-model:value="count" placeholder="单次获取数量" /> 微博正文id号:
-    <a-input v-model:value="weibo_id" placeholder="请输入微博正文id号" /> 想要搜索的内容:
-    <a-input v-model:value="search_value" placeholder="请输入想要搜索的评论" />
-    <a-button type="primary" @click="getReply">搜索</a-button>
+    <a-spin :spinning="reply_list_spinning">
+      <a-form ref="formRef" :model="form" layout="vertical" :rules="rules">
+        <a-row :gutter="10">
+          <a-col :span="6">
+            <a-form-item ref="count" label="单次获取数量" name="count">
+              <a-input v-model:value="form.count" placeholder="请输入单次获取数量" allowClear />
+            </a-form-item>
+          </a-col>
+          <a-col :span="6">
+            <a-form-item ref="weibo_id" label="微博正文id号" name="weibo_id">
+              <a-input v-model:value="form.weibo_id" placeholder="请输入微博正文id号" allowClear />
+            </a-form-item>
+          </a-col>
+          <a-col :span="6">
+            <a-form-item ref="search_value" label="想要搜索的内容" name="search_value">
+              <a-input
+                v-model:value="form.search_value"
+                placeholder="请输入想要搜索的内容"
+                allowClear
+              />
+            </a-form-item>
+          </a-col>
+        </a-row>
+        <a-row :gutter="10">
+          <a-button type="primary" @click="getReply">搜索</a-button>
+          <a-button type="primary" danger @click="stopGetReply">停止</a-button>
+        </a-row>
+      </a-form>
+    </a-spin>
   </div>
   <div>
+    总数：<span>{{ get_total }}</span> 已获取评论数：<span>{{ get_count }}</span>
     进度：
     <a-progress :percent="(get_count / get_total) * 100" :size="[300, 20]" />
   </div>
   <div>
     评论列表：
-    <a-spin :spinning="reply_list_spinning">
-      <div class="reply-list">
-        <template v-for="item of reply_list">
-          <div class="reply-item-layout">
+    <div class="reply-list">
+      <template v-for="item of reply_list">
+        <div class="reply-item-layout">
+          <div>
+            <img :src="item.user.profile_image_url" alt="头像" />
+          </div>
+          <div class="reply-item-right-layout">
             <div>
-              <img :src="item.user.profile_image_url" alt="头像" />
+              <span class="user-screen-name">{{ item.user.screen_name }}:</span
+              ><span>{{ item.text }}</span>
             </div>
-            <div class="reply-item-right-layout">
-              <div>
-                <span class="user-screen-name">{{ item.user.screen_name }}:</span
-                ><span>{{ item.text }}</span>
-              </div>
-              <div class="reply-item-right-bottom-layout bottom-text">
-                <div>{{ formatDateByCreatedAt(item.created_at) }} {{ item.source }}</div>
-                <div class="reply-operation-groups">
-                  <TranspondIcon /> <ReviewIcon /> <UpvoteIcon />{{ item.like_counts }}
-                </div>
+            <div class="reply-item-right-bottom-layout bottom-text">
+              <div>{{ formatDateByCreatedAt(item.created_at) }} {{ item.source }}</div>
+              <div class="reply-operation-groups">
+                <TranspondIcon /> <ReviewIcon /> <UpvoteIcon />{{ item.like_counts }}
               </div>
             </div>
           </div>
-        </template>
-      </div>
-    </a-spin>
+        </div>
+      </template>
+    </div>
+    <div class="center-item">
+      <a-spin :spinning="reply_list_spinning"></a-spin>
+    </div>
   </div>
 </template>
 
 <style scoped>
+.center-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/* .ant-btn-primary {
+  background-color: #ea8011;
+} */
 img {
   width: 34px;
   height: 34px;
