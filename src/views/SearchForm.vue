@@ -5,16 +5,16 @@ import dayjs from 'dayjs'
 import TranspondIcon from './icons/TranspondIcon.vue'
 import ReviewIcon from './icons/ReviewIcon.vue'
 import UpvoteIcon from './icons/UpvoteIcon.vue'
-import { IGetMainBodyInfo, IReplyInfoDataItem } from '../api/reply/type'
+import { IGetMainBodyInfo, IGetWeiboReplyInfo, IReplyInfoDataItem } from '../api/reply/type'
 import { message } from 'ant-design-vue'
 import { SleepMS } from '../libs/utils'
 const [messageApi, contextHolder] = message.useMessage()
 
 const searchValue = ref('')
-const replyList = ref<Array<IReplyInfoDataItem>>([])
+const replyList = ref<IReplyInfoDataItem[]>([])
 
-const weibo_id = ref('')  
-const reply_list_spinning = ref(false) 
+const weibo_id = ref('')
+const reply_list_spinning = ref(false)
 
 const count = ref(20)
 
@@ -23,7 +23,7 @@ const get_total = ref(1)
 const getReply = async () => {
   try {
     reply_list_spinning.value = true
-     const get_weibo_main_body_para: IGetMainBodyInfo = {
+    const get_weibo_main_body_para: IGetMainBodyInfo = {
       id: weibo_id.value,
       locale: 'zh-CN'
     }
@@ -33,12 +33,12 @@ const getReply = async () => {
     get_count.value = reply.data.length
     get_total.value = reply.total_number
 
-    const firstFetchReply: any[] = []
-    for(const reply of replyList.value){
+    const firstFetchReply: IReplyInfoDataItem[] = []
+    for (const replyItem of reply.data) {
       const regex = searchValue.value
-      const res = new RegExp(regex)
-      if(res.test(reply.text)){
-        firstFetchReply.push(reply)
+      const reg = new RegExp(regex)
+      if (reg.test(replyItem.text)) {
+        firstFetchReply.push(replyItem)
       }
     }
 
@@ -46,9 +46,9 @@ const getReply = async () => {
     let new_max_id = reply.max_id
 
     let flag = reply.data.length
-    while(flag > 0){
+    while (flag > 0) {
       await SleepMS(200)
-      const para =   {
+      const para = {
         is_asc: 0,
         max_id: new_max_id,
         is_reload: 1,
@@ -61,12 +61,12 @@ const getReply = async () => {
         locale: get_weibo_main_body_para.locale
       }
       const next_reply = await getWeiboReplyInfo(para)
-      
+
       const fetchReply: any[] = []
-      for(const reply of next_reply.data){
+      for (const reply of next_reply.data) {
         const regex = searchValue.value
         const res = new RegExp(regex)
-        if(res.test(reply.text)){
+        if (res.test(reply.text)) {
           fetchReply.push(reply)
         }
       }
@@ -77,7 +77,6 @@ const getReply = async () => {
       new_max_id = next_reply.max_id
       flag = next_reply.data.length
     }
-
   } catch (error) {
     messageApi.error(String(error))
   } finally {
@@ -85,16 +84,13 @@ const getReply = async () => {
   }
 }
 
-
-
 const formatDateByCreatedAt = (created_at: string) => {
   // 暂时只支持中国地区
   return dayjs(new Date(created_at).getTime()).format('YY-M-DD HH:mm')
 }
-
 </script>
 
-<template> 
+<template>
   <context-holder />
   <div>
     <span class="top-item">更新日期： {{ new Date() }}</span>
@@ -102,9 +98,9 @@ const formatDateByCreatedAt = (created_at: string) => {
     <span class="top-item">Develop by Cyrios.</span>
   </div>
   <div>
-    单次获取数量: <a-input v-model:value="count" placeholder="单次获取数量" />
-    微博正文id号: <a-input v-model:value="weibo_id" placeholder="请输入微博正文id号" />
-    想要搜索的内容: <a-input v-model:value="searchValue" placeholder="请输入想要搜索的评论" />
+    单次获取数量: <a-input v-model:value="count" placeholder="单次获取数量" /> 微博正文id号:
+    <a-input v-model:value="weibo_id" placeholder="请输入微博正文id号" /> 想要搜索的内容:
+    <a-input v-model:value="searchValue" placeholder="请输入想要搜索的评论" />
     <a-button type="primary" @click="getReply">搜索</a-button>
   </div>
   <div>
@@ -144,8 +140,8 @@ img {
   width: 34px;
   height: 34px;
 }
-.top-item{
-  margin-right: 10px
+.top-item {
+  margin-right: 10px;
 }
 .reply-list {
   overflow: scroll;
