@@ -11,9 +11,10 @@ import { SleepMS } from '../libs/utils'
 // import { data } from '../test/test_data.js'
 const [messageApi, contextHolder] = message.useMessage()
 
-const reply_list = ref<IReplyInfoDataItem[]>([])
+const LOAD_SLEEP_MS = 300
 
 const reply_list_spinning = ref(false)
+const reply_list = ref<IReplyInfoDataItem[]>([])
 
 const get_count = ref(0)
 const get_total = ref(0)
@@ -62,7 +63,7 @@ const getReply = async () => {
         break
       }
 
-      await SleepMS(200)
+      await SleepMS(LOAD_SLEEP_MS)
       const para = {
         is_asc: 0,
         max_id: new_max_id,
@@ -89,7 +90,12 @@ const getReply = async () => {
       get_count.value = get_count.value + next_reply.data.length
       effective_count.value = reply_list.value.length
 
-      new_max_id = next_reply.max_id
+      if (next_reply.max_id === 0) {
+        get_count.value = get_total.value
+        break
+      } else {
+        new_max_id = next_reply.max_id
+      }
     }
   } catch (error) {
     messageApi.error(String(error))
@@ -108,9 +114,12 @@ const stopGetReply = () => {
   stopFlag.value = true
 }
 
+const url = window.location.href
+const auto_weibo_id = url.match(/\/([^\/?]+)\?/)
+
 const form = ref({
   count: 20,
-  weibo_id: '',
+  weibo_id: auto_weibo_id ? auto_weibo_id[1] : '',
   search_value: ''
 })
 const formRef = ref()
