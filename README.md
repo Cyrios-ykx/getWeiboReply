@@ -1,8 +1,13 @@
 # GetWeiboReply
 
-Making An Plugin which can get the reply that you want to search at weibo with keywords.
+一个可以搜索新浪微博评论关键词的谷歌插件。
+A Google plugin that searches for reviews by keywords.
 
-⭐️ 更新日志
+⭐️ 功能简介
+
+- ✅ 根据关键词搜索评论功能
+
+📖 更新日志
 
 ```
 2024.2.19
