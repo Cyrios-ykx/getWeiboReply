@@ -54,8 +54,7 @@ const getReply = async () => {
     reply_list.value = fetch_reply
     let new_max_id = reply.max_id
 
-    let flag = reply.data.length
-    while (flag > 0) {
+    while (get_count.value < get_total.value) {
       if (stopFlag.value) {
         reply_list_spinning.value = false
         stopFlag.value = false
@@ -91,7 +90,6 @@ const getReply = async () => {
       effective_count.value = reply_list.value.length
 
       new_max_id = next_reply.max_id
-      flag = next_reply.data.length
     }
   } catch (error) {
     messageApi.error(String(error))
@@ -236,6 +234,15 @@ img {
 .ant-progress-line {
   margin-bottom: 0;
 }
+.ant-btn-primary {
+  background-color: #ea8011;
+}
+.ant-btn-primary:hover {
+  background-color: #ff8e15;
+}
+.ant-btn-dangerous {
+  background-color: red;
+}
 /* .ant-btn-primary {
   background-color: #ea8011;
 } */
@@ -275,7 +282,6 @@ img {
   align-items: center;
 }
 .reply-list {
-  overflow: scroll;
   display: grid;
   grid-auto-rows: auto; /* 设置每行的高度由内容决定 */
   gap: 20px;

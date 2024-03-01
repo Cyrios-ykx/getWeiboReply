@@ -12,10 +12,10 @@ div.style.top = '0'
 
 // 折叠按钮
 const button = document.createElement('div')
-button.style.width = '60px'
+button.style.width = '80px'
 button.style.height = '35px'
 button.style.cursor = 'pointer'
-button.style.borderRadius = '36px'
+button.style.borderRadius = '6px'
 button.style.lineHeight = '35px'
 button.style.textAlign = 'center'
 button.style.color = '#fff'
@@ -28,7 +28,7 @@ button.style.position = 'absolute'
 button.style.left = '0'
 button.style.top = '50%'
 button.style.transform = 'translateX(-100%) translateY(-50%)'
-button.innerText = '评论'
+button.innerText = '搜索评论'
 button.addEventListener('click', () => {
   const insetApp = document.getElementById('get-weibo-reply')
   if (insetApp) {

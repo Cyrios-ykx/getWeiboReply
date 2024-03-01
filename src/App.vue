@@ -14,6 +14,9 @@ onMounted(() => {
 </template>
 
 <style scoped>
+* {
+  color: rgba(0, 0, 0, 0.88);
+}
 .layout {
   padding-top: 60px;
   width: 800px;
