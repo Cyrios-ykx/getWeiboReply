@@ -5,6 +5,18 @@ Making An Plugin which can get the reply that you want to search at weibo with k
 ⭐️ 更新日志
 
 ```
+2024.2.19
+使用manifest_version为3的版本，打包成谷歌插件的形式
+更新vite的打包配置
+
+2024.2.21
+实现插件热更新
+加载正确的index.html
+
+2024.2.22
+获取评论列表并展示
+根据关键词筛选所需要的评论
+
 2024.2.27
 错误提示
 搞定格式化
