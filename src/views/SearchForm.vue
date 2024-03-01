@@ -147,7 +147,7 @@ const getTextContent = (id, text) => {
   <div class="form-layout">
     <div class="banner-container">
       <span class="top-item">更新日期： {{ update_date }}</span>
-      <span class="top-item">版本： v0.0.1</span>
+      <span class="top-item">版本： v0.0.2</span>
       <span class="top-item">Develop by Cyrios.</span>
     </div>
     <div class="form-container">

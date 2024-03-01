@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "get_weibo_reply",
   "description": "Making An Plugin which can get the reply that you want to search at weibo with keywords",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "action": {
     "default_popup": "src/popup/index.html"
   },
