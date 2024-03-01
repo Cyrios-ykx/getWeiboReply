@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { nextTick, ref } from 'vue'
 import { getWeiboMainBody, getWeiboReply, getWeiboReplyInfo } from '../api/reply'
 import dayjs from 'dayjs'
 import TranspondIcon from './icons/TranspondIcon.vue'
@@ -8,6 +8,7 @@ import UpvoteIcon from './icons/UpvoteIcon.vue'
 import { IGetMainBodyInfo, IGetWeiboReplyInfo, IReplyInfoDataItem } from '../api/reply/type'
 import { message } from 'ant-design-vue'
 import { SleepMS } from '../libs/utils'
+// import { data } from '../test/test_data.js'
 const [messageApi, contextHolder] = message.useMessage()
 
 const reply_list = ref<IReplyInfoDataItem[]>([])
@@ -15,7 +16,8 @@ const reply_list = ref<IReplyInfoDataItem[]>([])
 const reply_list_spinning = ref(false)
 
 const get_count = ref(0)
-const get_total = ref(1)
+const get_total = ref(0)
+const effective_count = ref(0)
 
 const getReply = async () => {
   try {
@@ -84,7 +86,9 @@ const getReply = async () => {
       }
       const temp_reply = JSON.parse(JSON.stringify(reply_list.value))
       reply_list.value = temp_reply.concat(fetch_reply)
-      get_count.value = reply_list.value.length
+
+      get_count.value = get_count.value + next_reply.data.length
+      effective_count.value = reply_list.value.length
 
       new_max_id = next_reply.max_id
       flag = next_reply.data.length
@@ -113,106 +117,169 @@ const form = ref({
 })
 const formRef = ref()
 const rules = {
-  count: [{ required: true, message: '请输入单次获取数量', trigger: 'blur' }],
-  weibo_id: [{ required: true, message: '请输入微博正文id号', trigger: 'blur' }],
-  search_value: [{ required: true, message: '请输入想要搜索的内容', trigger: 'blur' }]
+  count: [{ required: true, message: '请输入单次获取数量', trigger: 'change' }],
+  weibo_id: [{ required: true, message: '请输入微博正文id号', trigger: 'change' }],
+  search_value: [{ required: true, message: '请输入想要搜索的内容', trigger: 'change' }]
+}
+const update_date = new Date()
+
+const getTextContent = (id, text) => {
+  nextTick(() => {
+    const container = document.getElementById(id)
+
+    if (container) {
+      container.innerHTML = text
+    }
+  })
 }
 </script>
 
 <template>
   <!-- 这个不会提示 -->
   <context-holder />
-  <div>
-    <span class="top-item">更新日期： {{ new Date() }}</span>
-    <span class="top-item">版本： v0.0.1</span>
-    <span class="top-item">Develop by Cyrios.</span>
-  </div>
-  <div>
-    <a-spin :spinning="reply_list_spinning">
+  <div class="form-layout">
+    <div class="banner-container">
+      <span class="top-item">更新日期： {{ update_date }}</span>
+      <span class="top-item">版本： v0.0.1</span>
+      <span class="top-item">Develop by Cyrios.</span>
+    </div>
+    <div class="form-container">
       <a-form ref="formRef" :model="form" layout="vertical" :rules="rules">
-        <a-row :gutter="10">
-          <a-col :span="6">
-            <a-form-item ref="count" label="单次获取数量" name="count">
-              <a-input v-model:value="form.count" placeholder="请输入单次获取数量" allowClear />
-            </a-form-item>
-          </a-col>
-          <a-col :span="6">
-            <a-form-item ref="weibo_id" label="微博正文id号" name="weibo_id">
-              <a-input v-model:value="form.weibo_id" placeholder="请输入微博正文id号" allowClear />
-            </a-form-item>
-          </a-col>
-          <a-col :span="6">
-            <a-form-item ref="search_value" label="想要搜索的内容" name="search_value">
-              <a-input
-                v-model:value="form.search_value"
-                placeholder="请输入想要搜索的内容"
-                allowClear
-              />
-            </a-form-item>
-          </a-col>
-        </a-row>
-        <a-row :gutter="10">
-          <a-button type="primary" @click="getReply">搜索</a-button>
+        <a-spin :spinning="reply_list_spinning">
+          <a-row :gutter="10">
+            <a-col :span="6">
+              <a-form-item ref="count" label="单次获取数量" name="count">
+                <a-input v-model:value="form.count" placeholder="请输入单次获取数量" allowClear />
+              </a-form-item>
+            </a-col>
+            <a-col :span="6">
+              <a-form-item ref="weibo_id" label="微博正文id号" name="weibo_id">
+                <a-input
+                  v-model:value="form.weibo_id"
+                  placeholder="请输入微博正文id号"
+                  allowClear
+                />
+              </a-form-item>
+            </a-col>
+            <a-col :span="12">
+              <a-form-item ref="search_value" label="想要搜索的内容" name="search_value">
+                <a-input
+                  v-model:value="form.search_value"
+                  placeholder="请输入想要搜索的内容"
+                  allowClear
+                />
+              </a-form-item>
+            </a-col>
+          </a-row>
+        </a-spin>
+        <div>
+          <a-button type="primary" @click="getReply" :loading="reply_list_spinning">搜索</a-button>
+          <a-divider type="vertical" />
           <a-button type="primary" danger @click="stopGetReply">停止</a-button>
-        </a-row>
+        </div>
       </a-form>
-    </a-spin>
-  </div>
-  <div>
-    总数：<span>{{ get_total }}</span> 已获取评论数：<span>{{ get_count }}</span>
-    进度：
-    <a-progress :percent="(get_count / get_total) * 100" :size="[300, 20]" />
-  </div>
-  <div>
-    评论列表：
-    <div class="reply-list">
-      <template v-for="item of reply_list">
-        <div class="reply-item-layout">
-          <div>
-            <img :src="item.user.profile_image_url" alt="头像" />
-          </div>
-          <div class="reply-item-right-layout">
-            <div>
-              <span class="user-screen-name">{{ item.user.screen_name }}:</span
-              ><span>{{ item.text }}</span>
-            </div>
-            <div class="reply-item-right-bottom-layout bottom-text">
-              <div>{{ formatDateByCreatedAt(item.created_at) }} {{ item.source }}</div>
-              <div class="reply-operation-groups">
-                <TranspondIcon /> <ReviewIcon /> <UpvoteIcon />{{ item.like_counts }}
+    </div>
+    <div class="fetch-container">
+      <div class="fetch-details">
+        <span>总数：{{ get_total }}</span>
+        <span>已获取评论数：{{ get_count }}</span>
+        <span>有效评论数：{{ effective_count }}</span>
+      </div>
+      <div>
+        <div class="progress-container">
+          进度：
+          <a-progress
+            :percent="Number(((get_count / get_total) * 100).toFixed(2))"
+            :size="[300, 20]"
+          />
+        </div>
+      </div>
+      <div>
+        <div>评论列表：</div>
+        <div class="reply-list">
+          <template v-for="item of reply_list">
+            <div class="reply-item-layout">
+              <div class="user-img-container">
+                <img class="user-img" :src="item.user.profile_image_url" alt="头像" />
+              </div>
+              <div class="reply-item-right-layout">
+                <div>
+                  <span class="user-screen-name">{{ item.user.screen_name }}:</span
+                  ><span :id="String(item.id) ?? item.text"
+                    >{{ getTextContent(item.id, item.text) }}
+                  </span>
+                </div>
+                <div class="reply-item-right-bottom-layout bottom-text">
+                  <div>{{ formatDateByCreatedAt(item.created_at) }} {{ item.source }}</div>
+                  <div class="reply-operation-groups">
+                    <TranspondIcon /> <ReviewIcon /> <UpvoteIcon />{{ item.like_counts }}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          </template>
         </div>
-      </template>
-    </div>
-    <div class="center-item">
-      <a-spin :spinning="reply_list_spinning"></a-spin>
+        <div class="center-item">
+          <a-spin :spinning="reply_list_spinning"></a-spin>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.center-item {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-/* .ant-btn-primary {
-  background-color: #ea8011;
-} */
 img {
   width: 34px;
   height: 34px;
 }
-.top-item {
-  margin-right: 10px;
+/*  */
+.ant-progress-line {
+  margin-bottom: 0;
+}
+/* .ant-btn-primary {
+  background-color: #ea8011;
+} */
+/*  */
+.user-img-container {
+  display: grid;
+  justify-content: center;
+}
+.user-img {
+  border-radius: 34px;
+}
+.fetch-container {
+  margin-top: 24px;
+  display: grid;
+  gap: 24px;
+}
+
+.fetch-details {
+  display: grid;
+  grid-template-columns: auto auto auto;
+}
+.banner-container {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #797979;
+}
+.form-container {
+  padding-top: 10px;
+}
+.form-layout {
+  padding: 10px 20px 20px 20px;
+}
+.center-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .reply-list {
   overflow: scroll;
   display: grid;
   grid-auto-rows: auto; /* 设置每行的高度由内容决定 */
   gap: 20px;
+  margin-top: 10px;
 }
 .reply-item-layout {
   display: grid;
@@ -221,7 +288,7 @@ img {
 .reply-item-right-layout {
   display: grid;
   grid-template-rows: 1fr 1fr;
-  gap: 10px;
+  gap: 5px;
 }
 .reply-item-right-bottom-layout {
   display: grid;
@@ -237,5 +304,12 @@ img {
   display: grid;
   grid-template-columns: 2fr 2fr 2fr 1fr;
   align-items: center;
+}
+.progress-container {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 3fr 37fr;
+  align-items: center;
+  padding-right: 10px;
 }
 </style>
